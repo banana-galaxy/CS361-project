@@ -13,6 +13,16 @@ def getNewRates():
     response = requests.get(url)
     return response.json()
 
+def checkAPIKey():
+    if not os.path.isfile('api'):
+        return 0
+    else:
+        with open('api') as f:
+            key = f.read()
+        if key == "":
+            return 0
+    return 1
+
 print("Starting microservice...")
 
 if not os.path.isfile('api'):
@@ -30,7 +40,11 @@ app = FastAPI()
 async def getRate(base: str, conversion: str):
     if not os.path.isfile('rates.json'):
         print("Downloading rates...")
-        data = getNewRates()
+        key = checkAPIKey()
+        if key == 1:
+            data = getNewRates()
+        else:
+            return {"result": "error", "api": "key not found"}
 
         with open('rates.json', 'w') as f:
             json.dump(data, f, indent=2)
@@ -40,7 +54,13 @@ async def getRate(base: str, conversion: str):
 
         if time.time() > data['time_next_update_unix']:
             print("Updating rates...")
-            data = getNewRates()
+
+            key = checkAPIKey()
+            if key == 1:
+                data = getNewRates()
+            else:
+                return {"result": "error", "api": "key not found"}
+
             with open('rates.json', 'w') as f:
                 json.dump(data, f, indent=2)
 
