@@ -15,6 +15,14 @@ def getNewRates():
 
 print("Starting microservice...")
 
+if not os.path.isfile('api'):
+    print("\033[91mAPI key not found. Please create an \"api\" file and place the API key in it.\033[0m")
+else:
+    with open('api', 'r') as f:
+        key = f.read()
+    if key == "":
+        print("\033[91mAPI key not found. Please place the API key in the \"api\" file\033[0m")
+
 # Microservice main code
 app = FastAPI()
 
